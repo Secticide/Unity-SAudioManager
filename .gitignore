@@ -1,2 +1,7 @@
 Library/
 ProjectSettings/
+Temp/
+*.meta
+*.suo
+*.csproj
+*.sln
