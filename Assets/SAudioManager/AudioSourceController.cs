@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// Written by Jak Boulton, 04-02-2016
+using UnityEngine;
 using System;
 
 namespace SAudioManager
@@ -65,24 +66,28 @@ namespace SAudioManager
         /// <param name="decayDuration"></param>
         public void Stop(bool decayVolume = false, float decayDuration = 1.0f)
         {
-            if(!decayVolume) {
+            if(!decayVolume)
+            {
                 audioSource.Stop();
-                if(completeCallback != null) {
+                if(completeCallback != null)
+                {
                     completeCallback();
                 }
-            } else {
+            }
+            else
+            {
                 decaying = true;
             }
         }
 
         // INTERNAL
-        protected void Awake()
-        {
-            audioSource = this.gameObject.AddComponent<AudioSource>();
-        }
-
         protected void OnEnable()
         {
+            if(audioSource == null)
+            {
+                audioSource = this.gameObject.AddComponent<AudioSource>();
+            }
+
             audioSource.volume = 1.0f;
             audioSource.clip = null;
             decayTimer = 0.0f;
@@ -93,12 +98,16 @@ namespace SAudioManager
 
         protected void Update()
         {
-            if(!paused) {
-                if(decaying) {
+            if(!paused)
+            {
+                if(decaying)
+                {
                     decayTimer += Time.deltaTime;
-                    if(decayTimer >= decayDuration) {
+                    if(decayTimer >= decayDuration)
+                    {
                         audioSource.Stop();
-                        if(completeCallback != null) {
+                        if(completeCallback != null)
+                        {
                             completeCallback();
                         }
                     }
@@ -106,7 +115,9 @@ namespace SAudioManager
                     {
                         audioSource.volume = Mathf.Lerp(initialVolume, 0.0f, decayTimer / decayDuration);
                     }
-                } else if(audioSource.isPlaying && completeCallback != null) {
+                }
+                else if(audioSource.isPlaying && completeCallback != null)
+                {
                     completeCallback();
                 }
             }

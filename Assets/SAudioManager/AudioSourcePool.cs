@@ -20,11 +20,13 @@ namespace SAudioManager
             freeStack = new Stack<int>(size);
             indexLookup = new Dictionary<int, int>(size);
             poolParent = new GameObject("AudioSources");
+            pool = new AudioSourceController[size];
             GameObject.DontDestroyOnLoad(poolParent);
             for(int i = 0; i < size; ++i) {
                 pool[i] = new GameObject(string.Concat("AudioSource", i)).AddComponent<AudioSourceController>();
                 pool[i].transform.SetParent(poolParent.transform);
                 GameObject.DontDestroyOnLoad(pool[i].gameObject);
+                pool[i].gameObject.SetActive(false);
                 freeStack.Push(i);
                 indexLookup.Add(pool[i].GetInstanceID(), i);
             }
