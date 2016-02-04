@@ -13,6 +13,7 @@ namespace SAudioManager
         private bool paused = false;
 
         private bool decaying = false;
+        private float initialVolume = 1.0f;
         private float decayDuration = 0.0f;
         private float decayTimer = 0.0f;
 
@@ -35,6 +36,7 @@ namespace SAudioManager
             audioSource.clip = audioClip;
             audioSource.volume = volume;
             audioSource.Play(delay);
+            initialVolume = volume;
             completeCallback = callback;
         }
 
@@ -99,6 +101,10 @@ namespace SAudioManager
                         if(completeCallback != null) {
                             completeCallback();
                         }
+                    }
+                    else
+                    {
+                        audioSource.volume = Mathf.Lerp(initialVolume, 0.0f, decayTimer / decayDuration);
                     }
                 } else if(audioSource.isPlaying && completeCallback != null) {
                     completeCallback();
