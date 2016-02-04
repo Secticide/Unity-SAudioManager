@@ -73,7 +73,10 @@ namespace SAudioManager
                 AudioClip clip;
                 instance.clipCollection.TryGetValue(key, out clip);
                 AudioSourceController source = instance.audioSourcePool.Request();
-                source.Play(clip);
+                if(source != null)
+                {
+                    source.Play(clip, 0, 1, instance.AudioSourceComplete);
+                }
             }
             else if(instance.groupCollection.ContainsKey(key))
             {
@@ -107,8 +110,15 @@ namespace SAudioManager
         // Force singleton
         private AudioManager() {}
 
+        public void AudioSourceComplete(AudioSourceController source)
+        {
+            audioSourcePool.Collect(source);
+        }
+
         private void PopulateCollections()
         {
+            groupCollection = new Dictionary<string, AudioGroup>();
+            clipCollection = new Dictionary<string, AudioClip>();
             if(currentAudioPackage.audioGroups != null && currentAudioPackage.audioGroups.Length > 0)
             {
                 for(int i = 0; i < currentAudioPackage.audioGroups.Length; ++i)

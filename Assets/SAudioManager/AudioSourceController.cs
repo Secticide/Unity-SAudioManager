@@ -9,7 +9,7 @@ namespace SAudioManager
         // ATTRIBUTES
         private AudioClip audioClip;
         private AudioSource audioSource;
-        private Action completeCallback;
+        private Action<AudioSourceController> completeCallback;
 
         private bool paused = false;
 
@@ -32,7 +32,7 @@ namespace SAudioManager
         /// <param name="delay">Delay before the audio is played</param>
         /// <param name="volume">Volume of the audio source</param>
         /// <param name="callback"></param>
-        public void Play(AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action callback = null)
+        public void Play(AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<AudioSourceController> callback = null)
         {
             audioSource.clip = audioClip;
             audioSource.volume = volume;
@@ -69,9 +69,10 @@ namespace SAudioManager
             if(!decayVolume)
             {
                 audioSource.Stop();
+                audioSource.clip = null;
                 if(completeCallback != null)
                 {
-                    completeCallback();
+                    completeCallback(this);
                 }
             }
             else
@@ -89,7 +90,6 @@ namespace SAudioManager
             }
 
             audioSource.volume = 1.0f;
-            audioSource.clip = null;
             decayTimer = 0.0f;
             decayDuration = 0.0f;
             decaying = false;
@@ -106,9 +106,10 @@ namespace SAudioManager
                     if(decayTimer >= decayDuration)
                     {
                         audioSource.Stop();
+                        audioSource.clip = null;
                         if(completeCallback != null)
                         {
-                            completeCallback();
+                            completeCallback(this);
                         }
                     }
                     else
@@ -116,9 +117,13 @@ namespace SAudioManager
                         audioSource.volume = Mathf.Lerp(initialVolume, 0.0f, decayTimer / decayDuration);
                     }
                 }
-                else if(audioSource.isPlaying && completeCallback != null)
+                else if(!audioSource.isPlaying)
                 {
-                    completeCallback();
+                    audioSource.clip = null;
+                    if(completeCallback != null)
+                    {
+                        completeCallback(this);
+                    }
                 }
             }
         }

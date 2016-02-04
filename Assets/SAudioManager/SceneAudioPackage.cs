@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using System;
 
-[Serializable]
-public class SceneAudioPackage : ScriptableObject
+namespace SAudioManager
 {
-    public AudioGroup[] audioGroups;
+    [Serializable]
+    public class SceneAudioPackage : ScriptableObject
+    {
+        public AudioGroup[] audioGroups;
+    }
 }

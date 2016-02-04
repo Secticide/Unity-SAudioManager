@@ -39,7 +39,9 @@ namespace SAudioManager
         public AudioSourceController Request()
         {
             if(freeStack.Count > 0) {
-                return pool[freeStack.Pop()];
+                AudioSourceController source = pool[freeStack.Pop()];
+                source.gameObject.SetActive(true);
+                return source;
             }
             return null;
         }
