@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿// Written by Jak Boulton, 04-02-2016
+using UnityEngine;
 using System;
 
 namespace SAudioManager
