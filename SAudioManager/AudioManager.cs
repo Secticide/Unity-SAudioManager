@@ -28,19 +28,41 @@ namespace SAudioManager
 
         /// <summary>
         /// Load audio from an audio package
-        /// NOTE: Forces a GC.Collect
+        /// NOTE: Forces a Garbage Collection and Resources Unload
         /// </summary>
         /// <param name="audioPackage">Scene audio package to load</param>
         public static void LoadAudioPackage(SceneAudioPackage audioPackage)
         {
             ReleaseAudioPackage();
             instance.currentAudioPackage = audioPackage;
-            instance.PopulateCollections();
+            instance.ParseAudioPackage();
+        }
+
+        /// <summary>
+        /// Creates a temporary audio package and loads audio from groups
+        /// NOTE: Forces a Garbage Collection and Resources Unload
+        /// </summary>
+        /// <param name="audioGroups">Audio groups to load into new package</param>
+        public static void LoadAudioPackage(AudioGroup[] audioGroups)
+        {
+            ReleaseAudioPackage();
+            instance.currentAudioPackage = new SceneAudioPackage();
+            instance.currentAudioPackage.audioGroups = audioGroups;
+            instance.ParseAudioPackage();
+        }
+
+        /// <summary>
+        /// Loads audio group into the currently loaded package
+        /// </summary>
+        /// <param name="audioGroup">Audio group to be loaded</param>
+        public static void LoadAudioGroup(AudioGroup audioGroup)
+        {
+            instance.ParseAudioGroup(audioGroup);
         }
 
         /// <summary>
         /// Releases the currently loaded audio package
-        /// NOTE: Forces a GC.Collect
+        /// NOTE: Forces a Garbage Collection and Resources Unload
         /// </summary>
         public static void ReleaseAudioPackage()
         {
@@ -48,6 +70,7 @@ namespace SAudioManager
             instance.groupCollection = null;
             instance.currentAudioPackage = null;
             GC.Collect();
+            Resources.UnloadUnusedAssets();
         }
 
         /// <summary>
@@ -115,7 +138,7 @@ namespace SAudioManager
             audioSourcePool.Collect(source);
         }
 
-        private void PopulateCollections()
+        private void ParseAudioPackage()
         {
             groupCollection = new Dictionary<string, AudioGroup>();
             clipCollection = new Dictionary<string, AudioClip>();
@@ -128,7 +151,7 @@ namespace SAudioManager
             }
         }
 
-        private void LoadAudioGroup(AudioGroup audioGroup)
+        private void ParseAudioGroup(AudioGroup audioGroup)
         {
             if(!groupCollection.ContainsKey(audioGroup.name))
             {
@@ -150,7 +173,7 @@ namespace SAudioManager
             {
                 for(int i = 0; i < audioGroup.audioGroups.Length; ++i)
                 {
-                    instance.LoadAudioGroup(audioGroup.audioGroups[i]);
+                    instance.ParseAudioGroup(audioGroup.audioGroups[i]);
                 }
             }
         }

@@ -10,6 +10,7 @@ namespace SAudioManager
         public string name;
         public string[] keys;
         public AudioClip[] audioClips;
+        public AudioChannel[] channels;
         public AudioGroup[] audioGroups;
     }
 }
