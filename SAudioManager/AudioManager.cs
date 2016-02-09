@@ -15,6 +15,8 @@ namespace SAudioManager
         private Dictionary<string, AudioGroup> groupCollection;
         private Dictionary<string, AudioClip> clipCollection;
 
+        private List<Queue<string>> audioQueues;
+
         // METHODS
 
         /// <summary>
@@ -24,6 +26,7 @@ namespace SAudioManager
         {
             instance = new AudioManager();
             instance.audioSourcePool = new AudioSourcePool(concurrentSoundLimit);
+            instance.audioQueues = new List<Queue<string>>();
         }
 
         /// <summary>
@@ -74,23 +77,81 @@ namespace SAudioManager
         }
 
         /// <summary>
-        /// Play method used to play an audio clip or group (2D)
+        /// Play method used to play an audio clip or group
         /// </summary>
         /// <param name="key">Audio clip or group key</param>
         public static void Play(string key)
         {
+            if(!CheckSetup())
+            {
+                return;
+            }
+
+            InternalPlay(key);
+        }
+
+        /// <summary>
+        /// Play method used to play a collection of audio clips or groups
+        /// </summary>
+        /// <param name="keys">The audio keys to play</param>
+        public static void Play(string[] keys)
+        {
+            if(!CheckSetup())
+            {
+                return;
+            }
+
+            instance.audioQueues.Add(new Queue<string>(keys));
+            int queueIndex = instance.audioQueues.Count - 1;
+            for(int i = 0; i < keys.Length; ++i)
+            {
+                instance.audioQueues[queueIndex].Enqueue(keys[i]);
+            }
+
+            InternalPlay(instance.audioQueues[queueIndex].Dequeue(), queueIndex);
+        }
+
+        // INTERNAL
+        // Force singleton
+        private AudioManager() {}
+
+        private void AudioCallback(AudioSourceController source, int queueIndex = -1)
+        {
+            audioSourcePool.Collect(source);
+
+            if(queueIndex == -1)
+            {
+                return;
+            }
+
+            if(audioQueues != null && audioQueues.Count > queueIndex)
+            {
+                if(audioQueues[queueIndex].Count > 0)
+                {
+                    AudioManager.InternalPlay(audioQueues[queueIndex].Dequeue(), queueIndex);
+                }
+            }
+        }
+
+        private static bool CheckSetup()
+        {
             if(instance == null)
             {
                 Debug.Log("SAudioManager: AudioManager not initialised.");
-                return;
+                return false;
             }
 
             if(instance.currentAudioPackage == null)
             {
                 Debug.Log("SAudioManager: No AudioPackage loaded.");
-                return;
+                return false;
             }
 
+            return true;
+        }
+
+        private static void InternalPlay(string key, int queueIndex = -1)
+        {
             if(instance.clipCollection.ContainsKey(key))
             {
                 AudioClip clip;
@@ -98,7 +159,7 @@ namespace SAudioManager
                 AudioSourceController source = instance.audioSourcePool.Request();
                 if(source != null)
                 {
-                    source.Play(clip, 0, 1, instance.AudioSourceComplete);
+                    source.Play(clip, 0, 1, instance.AudioCallback, queueIndex);
                 }
             }
             else if(instance.groupCollection.ContainsKey(key))
@@ -109,33 +170,6 @@ namespace SAudioManager
             {
                 Debug.Log("SAudioManager: Key could not be found in the current audio package.");
             }
-        }
-
-        /// <summary>
-        /// Play method used to play an audio clip (3D)
-        /// </summary>
-        /// <param name="key">Audio clip key</param>
-        /// <param name="position">Position to play clip</param>
-        public static void Play3D(string key, Vector3 position)
-        {
-        }
-
-        /// <summary>
-        /// Play method used to play an audio clip (3D)
-        /// </summary>
-        /// <param name="key">Audio clip key</param>
-        /// <param name="parent">Parent, when you need the sound to follow an object</param>
-        public static void Play3D(string key, GameObject parent)
-        {
-        }
-
-        // INTERNAL
-        // Force singleton
-        private AudioManager() {}
-
-        public void AudioSourceComplete(AudioSourceController source)
-        {
-            audioSourcePool.Collect(source);
         }
 
         private void ParseAudioPackage()

@@ -9,7 +9,7 @@ namespace SAudioManager
         // ATTRIBUTES
         private AudioClip audioClip;
         private AudioSource audioSource;
-        private Action<AudioSourceController> completeCallback;
+        private Action<AudioSourceController, int> completeCallback;
 
         private bool paused = false;
 
@@ -17,6 +17,8 @@ namespace SAudioManager
         private float initialVolume = 1.0f;
         private float decayDuration = 0.0f;
         private float decayTimer = 0.0f;
+
+        private int queueIndex = -1;
 
         // METHODS
 
@@ -32,13 +34,14 @@ namespace SAudioManager
         /// <param name="delay">Delay before the audio is played</param>
         /// <param name="volume">Volume of the audio source</param>
         /// <param name="callback"></param>
-        public void Play(AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<AudioSourceController> callback = null)
+        public void Play(AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<AudioSourceController, int> callback = null, int queue = -1)
         {
             audioSource.clip = audioClip;
             audioSource.volume = volume;
             audioSource.Play(delay);
             initialVolume = volume;
             completeCallback = callback;
+            queueIndex = queue;
         }
 
         /// <summary>
@@ -62,8 +65,8 @@ namespace SAudioManager
         /// <summary>
         /// Stop the audio source playback with optional decay
         /// </summary>
-        /// <param name="decayVolume"></param>
-        /// <param name="decayDuration"></param>
+        /// <param name="decayVolume">Decay audio before stop</param>
+        /// <param name="decayDuration">The duration of the decay</param>
         public void Stop(bool decayVolume = false, float decayDuration = 1.0f)
         {
             if(!decayVolume)
@@ -72,7 +75,7 @@ namespace SAudioManager
                 audioSource.clip = null;
                 if(completeCallback != null)
                 {
-                    completeCallback(this);
+                    completeCallback(this, queueIndex);
                 }
             }
             else
@@ -92,6 +95,7 @@ namespace SAudioManager
             audioSource.volume = 1.0f;
             decayTimer = 0.0f;
             decayDuration = 0.0f;
+            queueIndex = -1;
             decaying = false;
             paused = false;
         }
@@ -109,7 +113,7 @@ namespace SAudioManager
                         audioSource.clip = null;
                         if(completeCallback != null)
                         {
-                            completeCallback(this);
+                            completeCallback(this, queueIndex);
                         }
                     }
                     else
@@ -122,7 +126,7 @@ namespace SAudioManager
                     audioSource.clip = null;
                     if(completeCallback != null)
                     {
-                        completeCallback(this);
+                        completeCallback(this, queueIndex);
                     }
                 }
             }
