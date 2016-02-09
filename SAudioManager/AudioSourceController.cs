@@ -9,7 +9,7 @@ namespace SAudioManager
         // ATTRIBUTES
         private AudioClip audioClip;
         private AudioSource audioSource;
-        private Action<AudioSourceController, int> completeCallback;
+        private Action<string, AudioSourceController> completeCallback;
 
         private bool paused = false;
 
@@ -18,7 +18,7 @@ namespace SAudioManager
         private float decayDuration = 0.0f;
         private float decayTimer = 0.0f;
 
-        private int queueIndex = -1;
+        private string playId = string.Empty;
 
         // METHODS
 
@@ -34,14 +34,14 @@ namespace SAudioManager
         /// <param name="delay">Delay before the audio is played</param>
         /// <param name="volume">Volume of the audio source</param>
         /// <param name="callback"></param>
-        public void Play(AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<AudioSourceController, int> callback = null, int queue = -1)
+        public void Play(string id, AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<string, AudioSourceController> callback = null)
         {
             audioSource.clip = audioClip;
             audioSource.volume = volume;
             audioSource.Play(delay);
             initialVolume = volume;
             completeCallback = callback;
-            queueIndex = queue;
+            playId = id;
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace SAudioManager
                 audioSource.clip = null;
                 if(completeCallback != null)
                 {
-                    completeCallback(this, queueIndex);
+                    completeCallback(playId, this);
                 }
             }
             else
@@ -95,7 +95,7 @@ namespace SAudioManager
             audioSource.volume = 1.0f;
             decayTimer = 0.0f;
             decayDuration = 0.0f;
-            queueIndex = -1;
+            playId = string.Empty;
             decaying = false;
             paused = false;
         }
@@ -113,7 +113,7 @@ namespace SAudioManager
                         audioSource.clip = null;
                         if(completeCallback != null)
                         {
-                            completeCallback(this, queueIndex);
+                            completeCallback(playId, this);
                         }
                     }
                     else
@@ -126,7 +126,7 @@ namespace SAudioManager
                     audioSource.clip = null;
                     if(completeCallback != null)
                     {
-                        completeCallback(this, queueIndex);
+                        completeCallback(playId, this);
                     }
                 }
             }

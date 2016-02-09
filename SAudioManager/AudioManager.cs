@@ -15,7 +15,7 @@ namespace SAudioManager
         private Dictionary<string, AudioGroup> groupCollection;
         private Dictionary<string, AudioClip> clipCollection;
 
-        private List<Queue<string>> audioQueues;
+        private Dictionary<string, Queue<string>> audioQueues;
 
         // METHODS
 
@@ -26,7 +26,7 @@ namespace SAudioManager
         {
             instance = new AudioManager();
             instance.audioSourcePool = new AudioSourcePool(concurrentSoundLimit);
-            instance.audioQueues = new List<Queue<string>>();
+            instance.audioQueues = new Dictionary<string, Queue<string>>();
         }
 
         /// <summary>
@@ -87,48 +87,47 @@ namespace SAudioManager
                 return;
             }
 
-            InternalPlay(key);
+            string playId = Guid.NewGuid().ToString();
+            InternalPlay(playId, key);
         }
 
         /// <summary>
         /// Play method used to play a collection of audio clips or groups
         /// </summary>
         /// <param name="keys">The audio keys to play</param>
-        public static void Play(string[] keys)
+        public static string Play(string[] keys)
         {
             if(!CheckSetup())
             {
-                return;
+                return string.Empty;
             }
 
-            instance.audioQueues.Add(new Queue<string>(keys));
-            int queueIndex = instance.audioQueues.Count - 1;
+            string playId = Guid.NewGuid().ToString();
+            Queue<string> audioQueue = new Queue<string>(keys);
+            instance.audioQueues.Add(playId, audioQueue);
             for(int i = 0; i < keys.Length; ++i)
             {
-                instance.audioQueues[queueIndex].Enqueue(keys[i]);
+                audioQueue.Enqueue(keys[i]);
             }
 
-            InternalPlay(instance.audioQueues[queueIndex].Dequeue(), queueIndex);
+            InternalPlay(playId, audioQueue.Dequeue());
+            return playId;
         }
 
         // INTERNAL
         // Force singleton
         private AudioManager() {}
 
-        private void AudioCallback(AudioSourceController source, int queueIndex = -1)
+        private void AudioCallback(string playId, AudioSourceController source)
         {
             audioSourcePool.Collect(source);
 
-            if(queueIndex == -1)
+            Queue<string> audioQueue;
+            if(audioQueues.TryGetValue(playId, out audioQueue))
             {
-                return;
-            }
-
-            if(audioQueues != null && audioQueues.Count > queueIndex)
-            {
-                if(audioQueues[queueIndex].Count > 0)
+                if(audioQueue.Count > 0)
                 {
-                    AudioManager.InternalPlay(audioQueues[queueIndex].Dequeue(), queueIndex);
+                    AudioManager.InternalPlay(playId, audioQueue.Dequeue());
                 }
             }
         }
@@ -150,7 +149,7 @@ namespace SAudioManager
             return true;
         }
 
-        private static void InternalPlay(string key, int queueIndex = -1)
+        private static void InternalPlay(string playId, string key)
         {
             if(instance.clipCollection.ContainsKey(key))
             {
@@ -159,7 +158,7 @@ namespace SAudioManager
                 AudioSourceController source = instance.audioSourcePool.Request();
                 if(source != null)
                 {
-                    source.Play(clip, 0, 1, instance.AudioCallback, queueIndex);
+                    source.Play(playId, clip, 0, 1, instance.AudioCallback);
                 }
             }
             else if(instance.groupCollection.ContainsKey(key))
