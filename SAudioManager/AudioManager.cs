@@ -105,11 +105,6 @@ namespace SAudioManager
             string playId = Guid.NewGuid().ToString();
             Queue<string> audioQueue = new Queue<string>(keys);
             instance.audioQueues.Add(playId, audioQueue);
-            for(int i = 0; i < keys.Length; ++i)
-            {
-                audioQueue.Enqueue(keys[i]);
-            }
-
             InternalPlay(playId, audioQueue.Dequeue());
             return playId;
         }
