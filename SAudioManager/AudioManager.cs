@@ -9,8 +9,8 @@ namespace SAudioManager
     {
         // ATTRIBUTES
         private static AudioManager instance;
+        private static AudioChannelManager channelManager;
 
-        private AudioSourcePool audioSourcePool;
         private SceneAudioPackage currentAudioPackage;
         private Dictionary<string, AudioGroup> groupCollection;
         private Dictionary<string, AudioClip> clipCollection;
@@ -25,8 +25,8 @@ namespace SAudioManager
         public static void Initialise(int concurrentSoundLimit)
         {
             instance = new AudioManager();
-            instance.audioSourcePool = new AudioSourcePool(concurrentSoundLimit);
             instance.audioQueues = new Dictionary<string, Queue<string>>();
+            channelManager = new AudioChannelManager(concurrentSoundLimit);
         }
 
         /// <summary>
@@ -118,18 +118,18 @@ namespace SAudioManager
         // Force singleton
         private AudioManager() {}
 
-        private void AudioCallback(string playId, AudioSourceController source)
+        private void AudioCallback(SAudioSource source)
         {
-            audioSourcePool.Collect(source);
-
             Queue<string> audioQueue;
-            if(audioQueues.TryGetValue(playId, out audioQueue))
+            if(audioQueues.TryGetValue(source.id, out audioQueue))
             {
                 if(audioQueue.Count > 0)
                 {
-                    AudioManager.InternalPlay(playId, audioQueue.Dequeue());
+                    AudioManager.InternalPlay(source.id, audioQueue.Dequeue());
                 }
             }
+
+            channelManager.CompletePlay(source);
         }
 
         private static bool CheckSetup()
@@ -155,11 +155,7 @@ namespace SAudioManager
             {
                 AudioClip clip;
                 instance.clipCollection.TryGetValue(key, out clip);
-                AudioSourceController source = instance.audioSourcePool.Request();
-                if(source != null)
-                {
-                    source.Play(playId, clip, 0, 1, instance.AudioCallback);
-                }
+                channelManager.Play(playId, "Channel", clip, 0, 1, instance.AudioCallback);
             }
             else if(instance.groupCollection.ContainsKey(key))
             {

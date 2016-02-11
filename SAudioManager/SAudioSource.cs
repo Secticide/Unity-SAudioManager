@@ -4,27 +4,38 @@ using System;
 
 namespace SAudioManager
 {
-    public class AudioSourceController : MonoBehaviour
+    public class SAudioSource : MonoBehaviour
     {
         // ATTRIBUTES
+        private string playId = string.Empty;
+        private string channelKey = string.Empty;
         private AudioClip audioClip;
         private AudioSource audioSource;
-        private Action<string, AudioSourceController> completeCallback;
+        private Action<SAudioSource> completeCallback;
 
         private bool paused = false;
+        private bool dimmed = false;
 
         private bool decaying = false;
         private float initialVolume = 1.0f;
         private float decayDuration = 0.0f;
         private float decayTimer = 0.0f;
 
-        private string playId = string.Empty;
-
         // METHODS
 
         public AudioSource source
         {
             get { return audioSource; }
+        }
+
+        public string id
+        {
+            get { return playId; }
+        }
+
+        public string channel
+        {
+            get { return channelKey; }
         }
 
         /// <summary>
@@ -34,14 +45,15 @@ namespace SAudioManager
         /// <param name="delay">Delay before the audio is played</param>
         /// <param name="volume">Volume of the audio source</param>
         /// <param name="callback"></param>
-        public void Play(string id, AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<string, AudioSourceController> callback = null)
+        public void Play(string id, string channel, AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<SAudioSource> callback = null)
         {
+            playId = id;
+            channelKey = channel;
             audioSource.clip = audioClip;
             audioSource.volume = volume;
             audioSource.Play(delay);
             initialVolume = volume;
             completeCallback = callback;
-            playId = id;
         }
 
         /// <summary>
@@ -75,7 +87,7 @@ namespace SAudioManager
                 audioSource.clip = null;
                 if(completeCallback != null)
                 {
-                    completeCallback(playId, this);
+                    completeCallback(this);
                 }
             }
             else
@@ -96,6 +108,7 @@ namespace SAudioManager
             decayTimer = 0.0f;
             decayDuration = 0.0f;
             playId = string.Empty;
+            channelKey = string.Empty;
             decaying = false;
             paused = false;
         }
@@ -113,7 +126,7 @@ namespace SAudioManager
                         audioSource.clip = null;
                         if(completeCallback != null)
                         {
-                            completeCallback(playId, this);
+                            completeCallback(this);
                         }
                     }
                     else
@@ -126,7 +139,7 @@ namespace SAudioManager
                     audioSource.clip = null;
                     if(completeCallback != null)
                     {
-                        completeCallback(playId, this);
+                        completeCallback(this);
                     }
                 }
             }

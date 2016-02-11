@@ -7,7 +7,7 @@ namespace SAudioManager
     public class AudioSourcePool
     {
         private GameObject poolParent;
-        private AudioSourceController[] pool;
+        private SAudioSource[] pool;
         private Stack<int> freeStack;
         private Dictionary<int, int> indexLookup;
 
@@ -20,10 +20,10 @@ namespace SAudioManager
             freeStack = new Stack<int>(size);
             indexLookup = new Dictionary<int, int>(size);
             poolParent = new GameObject("AudioSources");
-            pool = new AudioSourceController[size];
+            pool = new SAudioSource[size];
             GameObject.DontDestroyOnLoad(poolParent);
             for(int i = 0; i < size; ++i) {
-                pool[i] = new GameObject(string.Concat("AudioSource", i)).AddComponent<AudioSourceController>();
+                pool[i] = new GameObject(string.Concat("AudioSource", i)).AddComponent<SAudioSource>();
                 pool[i].transform.SetParent(poolParent.transform);
                 pool[i].gameObject.SetActive(false);
                 freeStack.Push(i);
@@ -35,10 +35,10 @@ namespace SAudioManager
         /// Request an audio source
         /// </summary>
         /// <returns>An audio source from the stack, or null if there are none</returns>
-        public AudioSourceController Request()
+        public SAudioSource Request()
         {
             if(freeStack.Count > 0) {
-                AudioSourceController source = pool[freeStack.Pop()];
+                SAudioSource source = pool[freeStack.Pop()];
                 source.gameObject.SetActive(true);
                 return source;
             }
@@ -49,7 +49,7 @@ namespace SAudioManager
         /// Send an audio source back to the stack
         /// </summary>
         /// <param name="source">The audio source to collect</param>
-        public void Collect(AudioSourceController source)
+        public void Collect(SAudioSource source)
         {
             int index;
             if(indexLookup.TryGetValue(source.GetInstanceID(), out index)) {
