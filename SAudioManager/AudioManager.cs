@@ -12,8 +12,8 @@ namespace SAudioManager
         private static AudioChannelManager channelManager;
 
         private SceneAudioPackage currentAudioPackage;
-        private Dictionary<string, AudioGroup> groupCollection;
-        private Dictionary<string, AudioClip> clipCollection;
+        private Dictionary<string, SAudioGroup> groupCollection;
+        private Dictionary<string, SAudioClip> clipCollection;
 
         private Dictionary<string, Queue<string>> audioQueues;
 
@@ -34,7 +34,7 @@ namespace SAudioManager
         /// NOTE: Forces a Garbage Collection and Resources Unload
         /// </summary>
         /// <param name="audioPackage">Scene audio package to load</param>
-        public static void LoadAudioPackage(SceneAudioPackage audioPackage)
+        public static void LoadAudioPackage(SAudioPackage audioPackage)
         {
             ReleaseAudioPackage();
             instance.currentAudioPackage = audioPackage;
@@ -46,7 +46,7 @@ namespace SAudioManager
         /// NOTE: Forces a Garbage Collection and Resources Unload
         /// </summary>
         /// <param name="audioGroups">Audio groups to load into new package</param>
-        public static void LoadAudioPackage(AudioGroup[] audioGroups)
+        public static void LoadAudioPackage(SAudioGroup[] audioGroups)
         {
             ReleaseAudioPackage();
             instance.currentAudioPackage = new SceneAudioPackage();
@@ -58,7 +58,7 @@ namespace SAudioManager
         /// Loads audio group into the currently loaded package
         /// </summary>
         /// <param name="audioGroup">Audio group to be loaded</param>
-        public static void LoadAudioGroup(AudioGroup audioGroup)
+        public static void LoadAudioGroup(SAudioGroup audioGroup)
         {
             instance.ParseAudioGroup(audioGroup);
         }
@@ -148,9 +148,9 @@ namespace SAudioManager
         {
             if(instance.clipCollection.ContainsKey(key))
             {
-                AudioClip clip;
+                SAudioClip clip;
                 instance.clipCollection.TryGetValue(key, out clip);
-                channelManager.Play(playId, "Channel", clip, 0, 1, instance.AudioCallback);
+                channelManager.Play(playId, clip, 0, 1, instance.AudioCallback);
             }
             else if(instance.groupCollection.ContainsKey(key))
             {
@@ -164,8 +164,8 @@ namespace SAudioManager
 
         private void ParseAudioPackage()
         {
-            groupCollection = new Dictionary<string, AudioGroup>();
-            clipCollection = new Dictionary<string, AudioClip>();
+            groupCollection = new Dictionary<string, SAudioGroup>();
+            clipCollection = new Dictionary<string, SAudioClip>();
             if(currentAudioPackage.audioGroups != null && currentAudioPackage.audioGroups.Length > 0)
             {
                 for(int i = 0; i < currentAudioPackage.audioGroups.Length; ++i)
@@ -175,7 +175,7 @@ namespace SAudioManager
             }
         }
 
-        private void ParseAudioGroup(AudioGroup audioGroup)
+        private void ParseAudioGroup(SAudioGroup audioGroup)
         {
             if(!groupCollection.ContainsKey(audioGroup.name))
             {
@@ -185,9 +185,9 @@ namespace SAudioManager
                 {
                     for(int i = 0; i < audioGroup.audioClips.Length; ++i)
                     {
-                        if(!clipCollection.ContainsKey(audioGroup.keys[i]))
+                        if(!clipCollection.ContainsKey(audioGroup.audioClips[i].key))
                         {
-                            clipCollection.Add(audioGroup.keys[i], audioGroup.audioClips[i]);
+                            clipCollection.Add(audioGroup.audioClips[i].key, audioGroup.audioClips[i].clip);
                         }
                     }
                 }

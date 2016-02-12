@@ -4,7 +4,7 @@ using System;
 namespace SAudioManager
 {
     [Serializable]
-    public class SceneAudioPackage : ScriptableObject
+    public class SAudioPackage : ScriptableObject
     {
         public AudioGroup[] audioGroups;
     }

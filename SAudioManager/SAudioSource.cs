@@ -8,8 +8,7 @@ namespace SAudioManager
     {
         // ATTRIBUTES
         private string playId = string.Empty;
-        private string channelKey = string.Empty;
-        private AudioClip audioClip;
+        private SAudioClip audioClip;
         private AudioSource audioSource;
         private Action<SAudioSource> completeCallback;
 
@@ -45,11 +44,11 @@ namespace SAudioManager
         /// <param name="delay">Delay before the audio is played</param>
         /// <param name="volume">Volume of the audio source</param>
         /// <param name="callback"></param>
-        public void Play(string id, string channel, AudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<SAudioSource> callback = null)
+        public void Play(string id, SAudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<SAudioSource> callback = null)
         {
             playId = id;
-            channelKey = channel;
-            audioSource.clip = audioClip;
+            channelKey = audioClip.channel.name;
+            audioSource.clip = audioClip.clip;
             audioSource.volume = volume;
             audioSource.Play(delay);
             initialVolume = volume;

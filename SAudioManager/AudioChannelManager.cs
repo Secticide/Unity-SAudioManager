@@ -16,13 +16,13 @@ namespace SAudioManager
             audioChannels = new Dictionary<string, List<SAudioSource>>();
         }
 
-        public void Play(string playId, string channelKey, AudioClip clip, ulong delay, float volume, Action<SAudioSource> callback)
+        public void Play(string playId, SAudioClip clip, ulong delay, float volume, Action<SAudioSource> callback)
         {
             SAudioSource source = audioSourcePool.Request();
             if(source != null)
             {
                 Add(source);
-                source.Play(playId, channelKey, clip, delay, volume, callback);
+                source.Play(playId, audioClip.channel.name, clip, delay, volume, callback);
             }
         }
 

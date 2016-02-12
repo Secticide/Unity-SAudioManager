@@ -4,13 +4,13 @@ using SAudioManager;
 
 namespace SAudioManager
 {
-    public class AudioChannelPackage : ScriptableObject
+    public class SAudioChannelCollection : ScriptableObject
     {
-        public AudioChannel[] channels;
+        public SAudioChannel[] channels;
     }
 
     [Serializable]
-    public class AudioChannel
+    public class SAudioChannel
     {
         public string name;
         public int index;
