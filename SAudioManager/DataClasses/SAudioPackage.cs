@@ -6,6 +6,6 @@ namespace SAudioManager
     [Serializable]
     public class SAudioPackage : ScriptableObject
     {
-        public AudioGroup[] audioGroups;
+        public SAudioGroup[] audioGroups;
     }
 }

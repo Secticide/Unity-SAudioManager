@@ -34,7 +34,7 @@ namespace SAudioManager
 
         public string channel
         {
-            get { return channelKey; }
+            get { return audioClip.channel.name; }
         }
 
         /// <summary>
@@ -47,7 +47,6 @@ namespace SAudioManager
         public void Play(string id, SAudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<SAudioSource> callback = null)
         {
             playId = id;
-            channelKey = audioClip.channel.name;
             audioSource.clip = audioClip.clip;
             audioSource.volume = volume;
             audioSource.Play(delay);
@@ -107,7 +106,6 @@ namespace SAudioManager
             decayTimer = 0.0f;
             decayDuration = 0.0f;
             playId = string.Empty;
-            channelKey = string.Empty;
             decaying = false;
             paused = false;
         }

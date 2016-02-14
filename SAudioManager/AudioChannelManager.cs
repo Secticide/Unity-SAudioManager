@@ -22,7 +22,7 @@ namespace SAudioManager
             if(source != null)
             {
                 Add(source);
-                source.Play(playId, audioClip.channel.name, clip, delay, volume, callback);
+                source.Play(playId, clip, delay, volume, callback);
             }
         }
 

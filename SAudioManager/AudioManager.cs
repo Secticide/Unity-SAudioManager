@@ -11,7 +11,7 @@ namespace SAudioManager
         private static AudioManager instance;
         private static AudioChannelManager channelManager;
 
-        private SceneAudioPackage currentAudioPackage;
+        private SAudioPackage currentAudioPackage;
         private Dictionary<string, SAudioGroup> groupCollection;
         private Dictionary<string, SAudioClip> clipCollection;
 
@@ -49,7 +49,7 @@ namespace SAudioManager
         public static void LoadAudioPackage(SAudioGroup[] audioGroups)
         {
             ReleaseAudioPackage();
-            instance.currentAudioPackage = new SceneAudioPackage();
+            instance.currentAudioPackage = new SAudioPackage();
             instance.currentAudioPackage.audioGroups = audioGroups;
             instance.ParseAudioPackage();
         }
@@ -187,7 +187,7 @@ namespace SAudioManager
                     {
                         if(!clipCollection.ContainsKey(audioGroup.audioClips[i].key))
                         {
-                            clipCollection.Add(audioGroup.audioClips[i].key, audioGroup.audioClips[i].clip);
+                            clipCollection.Add(audioGroup.audioClips[i].key, audioGroup.audioClips[i]);
                         }
                     }
                 }
