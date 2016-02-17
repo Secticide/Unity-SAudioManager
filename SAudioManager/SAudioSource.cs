@@ -8,6 +8,7 @@ namespace SAudioManager
     {
         // ATTRIBUTES
         private string playId = string.Empty;
+        private string channel = string.Empty;
         private SAudioClip audioClip;
         private AudioSource audioSource;
         private Action<SAudioSource> completeCallback;
@@ -32,9 +33,9 @@ namespace SAudioManager
             get { return playId; }
         }
 
-        public string channel
+        public string channelKey
         {
-            get { return audioClip.channel.name; }
+            get { return channel; }
         }
 
         /// <summary>
@@ -47,6 +48,7 @@ namespace SAudioManager
         public void Play(string id, SAudioClip audioClip, ulong delay = 0, float volume = 1.0f, Action<SAudioSource> callback = null)
         {
             playId = id;
+            channel = audioClip.channel.name;
             audioSource.clip = audioClip.clip;
             audioSource.volume = volume;
             audioSource.Play(delay);
@@ -106,6 +108,7 @@ namespace SAudioManager
             decayTimer = 0.0f;
             decayDuration = 0.0f;
             playId = string.Empty;
+            channel = string.Empty;
             decaying = false;
             paused = false;
         }

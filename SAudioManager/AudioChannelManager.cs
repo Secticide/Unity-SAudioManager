@@ -21,45 +21,45 @@ namespace SAudioManager
             SAudioSource source = audioSourcePool.Request();
             if(source != null)
             {
-                Add(source);
+                Add(source, clip.channel.name);
                 source.Play(playId, clip, delay, volume, callback);
             }
         }
 
         public void CompletePlay(SAudioSource source)
         {
-            Remove(source);
+            Remove(source, source.channelKey);
             audioSourcePool.Collect(source);
         }
 
-        private void Add(SAudioSource source)
+        private void Add(SAudioSource source, string channelKey)
         {
-            if(audioChannels.ContainsKey(source.channel))
+            if(audioChannels.ContainsKey(channelKey))
             {
                 List<SAudioSource> channel;
-                audioChannels.TryGetValue(source.channel, out channel);
+                audioChannels.TryGetValue(channelKey, out channel);
                 channel.Add(source);
             }
             else
             {
                 List<SAudioSource> channel = new List<SAudioSource>();
                 channel.Add(source);
-                audioChannels.Add(source.channel, channel);
+                audioChannels.Add(channelKey, channel);
                 UpdateChannelAudio();
             }
         }
 
-        private void Remove(SAudioSource source)
+        private void Remove(SAudioSource source, string channelKey)
         {
-            if(audioChannels.ContainsKey(source.channel))
+            if(audioChannels.ContainsKey(source.channelKey))
             {
                 List<SAudioSource> channel;
-                audioChannels.TryGetValue(source.channel, out channel);
+                audioChannels.TryGetValue(source.channelKey, out channel);
                 channel.Remove(source);
 
                 if(channel.Count == 0)
                 {
-                    audioChannels.Remove(source.channel);
+                    audioChannels.Remove(source.channelKey);
                     UpdateChannelAudio();
                 }
             }
