@@ -7,9 +7,9 @@ namespace SAudioManager
     [Serializable]
     public class SAudioGroup
     {
-        public string name;
-        public SAudioClip[] audioClips;
-        public SAudioGroup[] audioGroups;
+        public string key;
+        public string[] clipKeys;
+        public string[] groupKeys;
     }
 
     [Serializable]

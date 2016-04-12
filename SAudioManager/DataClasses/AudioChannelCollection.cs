@@ -5,6 +5,7 @@ using SAudioManager;
 
 namespace SAudioManager
 {
+    [Serializable]
     public class SAudioChannelCollection : ScriptableObject
     {
         public SAudioChannel[] channels;

@@ -11,7 +11,6 @@ namespace SAudioManager
         private static AudioManager instance;
         private static AudioChannelManager channelManager;
 
-        private SAudioPackage currentAudioPackage;
         private Dictionary<string, SAudioGroup> groupCollection;
         private Dictionary<string, SAudioClip> clipCollection;
 
@@ -31,36 +30,35 @@ namespace SAudioManager
 
         /// <summary>
         /// Load audio from an audio package
-        /// NOTE: Forces a Garbage Collection and Resources Unload
         /// </summary>
         /// <param name="audioPackage">Scene audio package to load</param>
         public static void LoadAudioPackage(SAudioPackage audioPackage)
         {
-            ReleaseAudioPackage();
-            instance.currentAudioPackage = audioPackage;
-            instance.ParseAudioPackage();
-        }
+            if(audioPackage.audioGroups != null && audioPackage.audioGroups.Length > 0)
+            {
+                if(instance.groupCollection == null)
+                {
+                    instance.groupCollection = new Dictionary<string, SAudioGroup>();
+                }
 
-        /// <summary>
-        /// Creates a temporary audio package and loads audio from groups
-        /// NOTE: Forces a Garbage Collection and Resources Unload
-        /// </summary>
-        /// <param name="audioGroups">Audio groups to load into new package</param>
-        public static void LoadAudioPackage(SAudioGroup[] audioGroups)
-        {
-            ReleaseAudioPackage();
-            instance.currentAudioPackage = new SAudioPackage();
-            instance.currentAudioPackage.audioGroups = audioGroups;
-            instance.ParseAudioPackage();
-        }
+                for(int i = 0; i < audioPackage.audioGroups.Length; ++i)
+                {
+                    instance.groupCollection.Add(audioPackage.audioGroups[i].key, audioPackage.audioGroups[i]);
+                }
+            }
 
-        /// <summary>
-        /// Loads audio group into the currently loaded package
-        /// </summary>
-        /// <param name="audioGroup">Audio group to be loaded</param>
-        public static void LoadAudioGroup(SAudioGroup audioGroup)
-        {
-            instance.ParseAudioGroup(audioGroup);
+            if(audioPackage.audioClips != null && audioPackage.audioClips.Length > 0)
+            {
+                if(instance.clipCollection == null)
+                {
+                    instance.clipCollection = new Dictionary<string, SAudioClip>();
+                }
+
+                for(int i = 0; i < audioPackage.audioClips.Length; ++i)
+                {
+                    instance.clipCollection.Add(audioPackage.audioClips[i].key, audioPackage.audioClips[i]);
+                }
+            }
         }
 
         /// <summary>
@@ -71,7 +69,6 @@ namespace SAudioManager
         {
             instance.clipCollection = null;
             instance.groupCollection = null;
-            instance.currentAudioPackage = null;
             GC.Collect();
             Resources.UnloadUnusedAssets();
         }
@@ -87,8 +84,17 @@ namespace SAudioManager
                 return;
             }
 
-            string playId = Guid.NewGuid().ToString();
-            InternalPlay(playId, key);
+            if(instance.groupCollection.ContainsKey(key))
+            {
+                SAudioGroup group;
+                instance.groupCollection.TryGetValue(key, out group);
+                Play(group.clipKeys);
+            }
+            else
+            {
+                string playId = Guid.NewGuid().ToString();
+                InternalPlay(playId, key);
+            }
         }
 
         /// <summary>
@@ -135,12 +141,6 @@ namespace SAudioManager
                 return false;
             }
 
-            if(instance.currentAudioPackage == null)
-            {
-                Debug.Log("SAudioManager: No AudioPackage loaded.");
-                return false;
-            }
-
             return true;
         }
 
@@ -152,53 +152,9 @@ namespace SAudioManager
                 instance.clipCollection.TryGetValue(key, out clip);
                 channelManager.Play(playId, clip, 0, 1, instance.AudioCallback);
             }
-            else if(instance.groupCollection.ContainsKey(key))
-            {
-                Debug.Log("SAudioManager: Group play not implemented yet.");
-            }
             else
             {
                 Debug.Log("SAudioManager: Key could not be found in the current audio package.");
-            }
-        }
-
-        private void ParseAudioPackage()
-        {
-            groupCollection = new Dictionary<string, SAudioGroup>();
-            clipCollection = new Dictionary<string, SAudioClip>();
-            if(currentAudioPackage.audioGroups != null && currentAudioPackage.audioGroups.Length > 0)
-            {
-                for(int i = 0; i < currentAudioPackage.audioGroups.Length; ++i)
-                {
-                    LoadAudioGroup(currentAudioPackage.audioGroups[i]);
-                }
-            }
-        }
-
-        private void ParseAudioGroup(SAudioGroup audioGroup)
-        {
-            if(!groupCollection.ContainsKey(audioGroup.name))
-            {
-                groupCollection.Add(audioGroup.name, audioGroup);
-
-                if(audioGroup.audioClips != null && audioGroup.audioClips.Length > 0)
-                {
-                    for(int i = 0; i < audioGroup.audioClips.Length; ++i)
-                    {
-                        if(!clipCollection.ContainsKey(audioGroup.audioClips[i].key))
-                        {
-                            clipCollection.Add(audioGroup.audioClips[i].key, audioGroup.audioClips[i]);
-                        }
-                    }
-                }
-            }
-                
-            if(audioGroup.audioGroups != null && audioGroup.audioGroups.Length > 0)
-            {
-                for(int i = 0; i < audioGroup.audioGroups.Length; ++i)
-                {
-                    instance.ParseAudioGroup(audioGroup.audioGroups[i]);
-                }
             }
         }
     }
