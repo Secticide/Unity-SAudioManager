@@ -49,6 +49,19 @@ namespace SAudioManager
             }
         }
 
+        public void Pause(string[] channels = null)
+        {
+            if(channels == null)
+            {
+                List<string> channelKeys = new List<string>(audioChannels.Keys);
+
+                for(int i = 0; i < channelKeys.Length; ++i)
+                {
+                    PauseChannel(channelKeys[i]);
+                }
+            }
+        }
+
         public void CompletePlay(SAudioSource source)
         {
             Remove(source, source.channelKey);
@@ -59,17 +72,36 @@ namespace SAudioManager
         {
             if(audioChannels != null && audioChannels.Count > 0)
             {
-                if (audioChannels.ContainsKey(channel))
+                if(audioChannels.ContainsKey(channel))
                 {
                     List<SAudioSource> channelSources;
                     audioChannels.TryGetValue(channel, out channelSources);
 
-                    if (channelSources != null && channelSources.Count > 0)
+                    if(channelSources != null && channelSources.Count > 0)
                     {
-                        for (int i = 0; i < channelSources.Count; ++i)
+                        for(int i = 0; i < channelSources.Count; ++i)
                         {
-                            Debug.Log("Removing " + channelSources[i].id + " from channel " + channel);
                             channelSources[i].Stop(decay, decayDuration);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void PauseChannel(string channel)
+        {
+            if(audioChannels != null && audioChannels.Count > 0)
+            {
+                if(audioChannels.ContainsKey(channel))
+                {
+                    List<SAudioSource> channelSources;
+                    audioChannels.TryGetValue(channel, out channelSources);
+
+                    if(channelSources != null && channelSources.Count > 0)
+                    {
+                        for(int i = 0; i < channelSources.Count; ++i)
+                        {
+                            channelSources[i].Pause();
                         }
                     }
                 }
