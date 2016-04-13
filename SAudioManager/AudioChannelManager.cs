@@ -26,10 +26,54 @@ namespace SAudioManager
             }
         }
 
+        public void Stop(string[] channels = null, bool decay = false, float decayDuration = 1.0f)
+        {
+            if(channels == null)
+            {
+                List<string> channelKeys = new List<string>(audioChannels.Keys);
+
+                for(int i = 0; i < channelKeys.Count; ++i)
+                {
+                    StopChannel(channelKeys[i], decay, decayDuration);
+                }
+            }
+            else if(channels.Length > 0)
+            {
+                for(int i = 0; i < channels.Length; ++i)
+                {
+                    if(!string.IsNullOrEmpty(channels[i]))
+                    {
+                        StopChannel(channels[i], decay, decayDuration);
+                    }
+                }
+            }
+        }
+
         public void CompletePlay(SAudioSource source)
         {
             Remove(source, source.channelKey);
             audioSourcePool.Collect(source);
+        }
+
+        private void StopChannel(string channel, bool decay, float decayDuration)
+        {
+            if(audioChannels != null && audioChannels.Count > 0)
+            {
+                if (audioChannels.ContainsKey(channel))
+                {
+                    List<SAudioSource> channelSources;
+                    audioChannels.TryGetValue(channel, out channelSources);
+
+                    if (channelSources != null && channelSources.Count > 0)
+                    {
+                        for (int i = 0; i < channelSources.Count; ++i)
+                        {
+                            Debug.Log("Removing " + channelSources[i].id + " from channel " + channel);
+                            channelSources[i].Stop(decay, decayDuration);
+                        }
+                    }
+                }
+            }
         }
 
         private void Add(SAudioSource source, string channelKey)

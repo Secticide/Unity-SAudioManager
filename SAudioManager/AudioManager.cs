@@ -115,6 +115,31 @@ namespace SAudioManager
             return playId;
         }
 
+        /// <summary>
+        /// Stop method used to stop either a specific channel or all channels
+        /// </summary>
+        /// <param name="channel">The channel to stop</param>
+        public static void Stop(string channel = null, bool decay = false, float decayDuration = 1.0f)
+        {
+            if(channel == null)
+            {
+                channelManager.Stop(null, decay, decayDuration);
+            }
+            else
+            {
+                channelManager.Stop(new string[]{channel}, decay, decayDuration);
+            }
+        }
+
+        /// <summary>
+        /// Stop method used to stop either a group of channels
+        /// </summary>
+        /// <param name="channels">The channels to stop</param>
+        public static void Stop(string[] channels, bool decay = false, float decayDuration = 1.0f)
+        {
+            channelManager.Stop(channels, decay, decayDuration);
+        }
+
         // INTERNAL
         // Force singleton
         private AudioManager() {}
@@ -124,9 +149,13 @@ namespace SAudioManager
             Queue<string> audioQueue;
             if(audioQueues.TryGetValue(source.id, out audioQueue))
             {
-                if(audioQueue.Count > 0)
+                if(audioQueue.Count > 0 && !source.isStopped)
                 {
                     AudioManager.InternalPlay(source.id, audioQueue.Dequeue());
+                }
+                else
+                {
+                    audioQueues.Remove(source.id);
                 }
             }
 

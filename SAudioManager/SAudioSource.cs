@@ -15,6 +15,7 @@ namespace SAudioManager
 
         private bool paused = false;
         private bool dimmed = false;
+        private bool stopped = false;
 
         private bool decaying = false;
         private float initialVolume = 1.0f;
@@ -36,6 +37,11 @@ namespace SAudioManager
         public string channelKey
         {
             get { return channel; }
+        }
+
+        public bool isStopped
+        {
+            get { return stopped;  }
         }
 
         /// <summary>
@@ -85,6 +91,7 @@ namespace SAudioManager
             {
                 audioSource.Stop();
                 audioSource.clip = null;
+                stopped = true;
                 if(completeCallback != null)
                 {
                     completeCallback(this);
